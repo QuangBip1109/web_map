@@ -1,0 +1,16 @@
+    #!/usr/bin/env bash
+
+    # Set environment variables for dev
+    set -a
+    . ./.env    
+    set +a
+    #Test if port & name success exported
+    echo "Client name is: " $CLIENT_NAME "port opening is:" $APP_PORT "click http://localhost:"$APP_PORT "to open in browser"
+    # Decide which docker-compose file to use
+    COMPOSE_FILE="dev"
+
+    # Create docker-compose command to run
+    COMPOSE="docker-compose --project-name odoo17 -f docker-compose.${COMPOSE_FILE}.yml"
+
+    # Run docker-compose command to run
+    $COMPOSE "$@"

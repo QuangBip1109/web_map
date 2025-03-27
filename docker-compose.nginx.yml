@@ -1,0 +1,60 @@
+version: '3'
+services:
+  odoo:
+    build: .
+    container_name: ${CLIENT_NAME}-DEV-NGINX
+    ports:
+      - "8069:8069"
+      - "8072:8072"
+    depends_on:
+      - db 
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./config/odoo.conf:/etc/odoo/odoo.conf
+      - ./odoo/addons:/mnt/addons
+      - ./odoo/extra:/mnt/extra
+    #command: --dev all # odoo -u social_zalo -d zalo 
+  
+  db:
+    image: postgres:12
+    container_name: ${CLIENT_NAME}-DEV-NGINX-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db:/var/lib/postgresql/data/pgdata
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: ${CLIENT_NAME}-DEV-NGINX-pgadmin
+    ports:
+      - "${PGADMIN_PORT}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    restart: unless-stopped
+    logging:
+      driver: "none"
+
+  nginx:
+    image: nginx
+    container_name: ${CLIENT_NAME}-DEV-NGINX-nginx
+    ports:
+      - "80:8069"
+    depends_on:
+      - odoo
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
+    restart: unless-stopped
+
+volumes:
+  odoo-data:
+  odoo-db:
+  pgadmin:
